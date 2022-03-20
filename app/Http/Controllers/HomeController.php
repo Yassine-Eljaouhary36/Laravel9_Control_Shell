@@ -38,18 +38,21 @@ class HomeController extends Controller
     }
 
     public function run(Request $request){
-        $result = shell_exec('tasklist /FI "PID eq '.$request->pid.'"' );
+
+        $process=Process::findOrFail($request->id);
+        $oldpid = $process->pid;
+        
+        $result = shell_exec('tasklist /FI "PID eq '.$oldpid.'"' );
         //Check The status Of The Process
         if(count(preg_split("/\n/", $result))==2){
-        $proc = Process::find($request->id);
-        $command = $proc->command;
-       
+        $command = $process->command;
         $cmd = 'wmic process call create "'.$command.'" | find "ProcessId"';
         $handle = popen("start /B ". $cmd, "r");
         $read = fread($handle, 200); 
         $pid=substr($read,strpos($read,'=')+1);
         $pid=substr($pid,0,strpos($pid,';') );
-
+        $process->pid=$pid;
+        $process->save();
         return redirect()->route('Home')->with('status', 'Command Already Existed in DataBase ');
         }else{
             return redirect()->route('Home');
@@ -69,7 +72,7 @@ class HomeController extends Controller
 
     // To Kill The Proccess After Check her Status
     public function KillPross(Request $request){
-            
+
         $pid=$request->pid;
         $result = shell_exec('tasklist /FI "PID eq '.$pid.'"' );
         if (count(preg_split("/\n/", $result))>2) {

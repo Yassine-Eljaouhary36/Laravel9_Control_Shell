@@ -91,7 +91,6 @@
                                     </form>
                                     <form style="margin-left: 5px" action="{{route("runProc")}}" method="POST">
                                         @csrf
-                                        <input type="hidden" name="pid" value="{{$process->pid}}">
                                         <input type="hidden" name="id" value="{{$process->id}}">
                                         <button type="submit" class="btn btn-success"> run it</button>
                                     </form>
